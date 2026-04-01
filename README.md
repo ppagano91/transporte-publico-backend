@@ -55,3 +55,8 @@ uvicorn app.main:app --reload --port 8000
 - `GET /api/subtes/forecast`
   - proxy de `GET /subtes/forecastGTFS`
   - no requiere coordenadas ni filtros adicionales
+- `GET /api/ecobici/station-information`
+  - proxy de `GET /ecobici/gbfs/stationInformation`
+  - query opcional: `force_refresh` (default `false`) para invalidar cache en memoria
+- `GET /api/ecobici/station-status`
+  - proxy de `GET /ecobici/gbfs/stationStatus`

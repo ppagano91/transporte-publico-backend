@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
+from app.routes.ecobici import router as ecobici_router
 from app.routes.transport import router as transport_router
 
 app = FastAPI(title="Demo Transporte Backend", version="0.1.0")
@@ -21,3 +22,4 @@ async def health():
 
 
 app.include_router(transport_router)
+app.include_router(ecobici_router)
