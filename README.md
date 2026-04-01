@@ -52,3 +52,6 @@ uvicorn app.main:app --reload --port 8000
 - `GET /api/vehicle-positions-simple`
   - query opcionales: `route_id`, `agency_id`
   - requiere al menos uno de los dos filtros
+- `GET /api/subtes/forecast`
+  - proxy de `GET /subtes/forecastGTFS`
+  - no requiere coordenadas ni filtros adicionales

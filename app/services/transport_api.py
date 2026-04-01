@@ -6,6 +6,7 @@ from app.core.config import settings
 
 EXTERNAL_PATH = "/colectivos/vehiclePositions"
 EXTERNAL_SIMPLE_PATH = "/colectivos/vehiclePositionsSimple"
+EXTERNAL_SUBTE_FORECAST_PATH = "/subtes/forecastGTFS"
 
 
 class TransportApiError(Exception):
@@ -90,6 +91,39 @@ async def fetch_vehicle_positions_simple(
         params["agency_id"] = trimmed_agency_id
 
     url = f"{settings.transporte_base_url.rstrip('/')}{EXTERNAL_SIMPLE_PATH}"
+    timeout = httpx.Timeout(10.0, connect=5.0)
+
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            response = await client.get(url, params=params)
+    except httpx.TimeoutException as exc:
+        raise TransportApiTimeoutError("Timeout calling Transport API.") from exc
+    except httpx.HTTPError as exc:
+        raise TransportApiError("Transport API request failed.") from exc
+
+    if response.status_code >= 400:
+        text = response.text.strip()
+        detail = text[:300] if text else "No detail returned by upstream API."
+        raise TransportApiHttpError(
+            status_code=response.status_code,
+            message=f"Transport API error {response.status_code}: {detail}",
+        )
+
+    return response.json()
+
+
+async def fetch_subte_forecast() -> Any:
+    if not settings.transporte_client_id or not settings.transporte_client_secret:
+        raise TransportApiError(
+            "Missing TRANSPORTE_CLIENT_ID or TRANSPORTE_CLIENT_SECRET in backend env."
+        )
+
+    params: dict[str, str] = {
+        "client_id": settings.transporte_client_id,
+        "client_secret": settings.transporte_client_secret,
+    }
+
+    url = f"{settings.transporte_base_url.rstrip('/')}{EXTERNAL_SUBTE_FORECAST_PATH}"
     timeout = httpx.Timeout(10.0, connect=5.0)
 
     try:
