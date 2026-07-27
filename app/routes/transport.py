@@ -1,5 +1,14 @@
+from typing import NoReturn
+
 from fastapi import APIRouter, HTTPException, Query
 
+from app.services.subte_static import (
+    SubteStaticDataError,
+    SubteStaticFileNotFoundError,
+    SubteStaticInvalidJsonError,
+    get_subte_network,
+    get_subte_stations,
+)
 from app.services.transport_api import (
     TransportApiError,
     TransportApiHttpError,
@@ -101,6 +110,48 @@ async def get_subte_forecast():
             status_code=500,
             detail="Unexpected server error while fetching subte forecast.",
         ) from exc
+
+
+def _raise_subte_static_http_error(exc: Exception) -> NoReturn:
+    if isinstance(exc, SubteStaticFileNotFoundError):
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if isinstance(exc, SubteStaticInvalidJsonError):
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    if isinstance(exc, SubteStaticDataError):
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc) or "Error al leer datos estaticos de subtes.",
+        ) from exc
+    raise HTTPException(
+        status_code=500,
+        detail="Unexpected server error while loading static subway data.",
+    ) from exc
+
+
+@router.get("/api/subtes/network")
+async def get_subte_network_geojson(
+    force_refresh: bool = Query(
+        default=False,
+        description="Bypass in-memory cache and reload network GeoJSON from disk.",
+    ),
+):
+    try:
+        return get_subte_network(force_refresh=force_refresh)
+    except Exception as exc:
+        _raise_subte_static_http_error(exc)
+
+
+@router.get("/api/subtes/stations")
+async def get_subte_stations_geojson(
+    force_refresh: bool = Query(
+        default=False,
+        description="Bypass in-memory cache and reload stations GeoJSON from disk.",
+    ),
+):
+    try:
+        return get_subte_stations(force_refresh=force_refresh)
+    except Exception as exc:
+        _raise_subte_static_http_error(exc)
 
 
 @router.get("/api/transito/semaforos")
