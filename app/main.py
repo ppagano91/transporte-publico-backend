@@ -21,7 +21,11 @@ app.add_middleware(
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "version": "1.0.0",
+        "message": "API de Subtes de la Ciudad Autónoma de Buenos Aires"
+        }
 
 
 app.include_router(transport_router)
