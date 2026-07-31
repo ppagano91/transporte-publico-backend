@@ -7,9 +7,9 @@ from app.routes.transport import router as transport_router
 
 app = FastAPI(title="Demo Transporte Backend", version="0.1.0")
 
-# Orígenes explícitos (ver CORS_ALLOWED_ORIGINS). Con el proxy de Vite el
-# navegador habla same-origin con :5173 y no necesita CORS; esto cubre el
-# acceso directo al backend en desarrollo.
+# Orígenes explícitos vía CORS_ALLOWED_ORIGINS (coma-separados).
+# Desarrollo con proxy de Vite: same-origin en :5173, CORS no interviene.
+# Producción (Vercel → Render): agregar el dominio del frontend en Render.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_allowed_origins,

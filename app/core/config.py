@@ -10,20 +10,33 @@ def _get_env(name: str, default: str = "") -> str:
     return os.getenv(name, default).strip()
 
 
+def _normalize_origin(origin: str) -> str:
+    """Quita espacios y barras finales; ignora entradas vacías."""
+    return origin.strip().rstrip("/")
+
+
 def _parse_cors_allowed_origins() -> list[str]:
     """
     Orígenes CORS explícitos para desarrollo / acceso directo al backend.
 
     Preferir CORS_ALLOWED_ORIGINS (lista separada por comas).
     Si no está definida, se usan FRONTEND_ORIGIN y defaults locales.
-    No usar '*' junto con credenciales.
+    No usar '*'. Cada origen de Vercel (producción o preview) debe
+    agregarse de forma explícita en Render.
     """
     raw = _get_env("CORS_ALLOWED_ORIGINS")
     if raw:
-        return [origin.strip() for origin in raw.split(",") if origin.strip()]
+        origins: list[str] = []
+        for part in raw.split(","):
+            normalized = _normalize_origin(part)
+            if normalized and normalized not in origins:
+                origins.append(normalized)
+        return origins
 
-    origins: list[str] = []
-    frontend_origin = _get_env("FRONTEND_ORIGIN", "http://localhost:5173")
+    origins = []
+    frontend_origin = _normalize_origin(
+        _get_env("FRONTEND_ORIGIN", "http://localhost:5173")
+    )
     if frontend_origin:
         origins.append(frontend_origin)
 

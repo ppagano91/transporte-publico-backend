@@ -38,6 +38,24 @@ cp .env.example .env
 
 Editar `.env` con `TRANSPORTE_CLIENT_ID` y `TRANSPORTE_CLIENT_SECRET`.
 
+## CORS
+
+Los orígenes permitidos se configuran con `CORS_ALLOWED_ORIGINS` (lista separada por comas). No usar `*`.
+
+Desarrollo típico:
+
+```env
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
+
+Producción (frontend en Vercel llamando a este backend en Render):
+
+```env
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,https://nombre-proyecto.vercel.app
+```
+
+Tras el primer deploy en Vercel, agregar el dominio real. Cada preview de Vercel debe listarse de forma explícita.
+
 ## Run
 
 ```bash
